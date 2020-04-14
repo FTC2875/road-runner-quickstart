@@ -9,6 +9,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
+import java.util.List;
+import java.util.OptionalDouble;
+
+import static java.lang.Math.abs;
+
 /**
  * This is a simple teleop routine for testing localization. Drive the robot around like a normal
  * teleop routine and make sure the robot's estimated pose matches the robot's actual pose (slight
@@ -39,11 +44,11 @@ public class LocalizationTest extends LinearOpMode {
             );
 
             Pose2d vel;
-            if (Math.abs(baseVel.getX()) + Math.abs(baseVel.getY()) + Math.abs(baseVel.getHeading()) > 1) {
+            if (abs(baseVel.getX()) + abs(baseVel.getY()) + abs(baseVel.getHeading()) > 1) {
                 // re-normalize the powers according to the weights
-                double denom = VX_WEIGHT * Math.abs(baseVel.getX())
-                    + VY_WEIGHT * Math.abs(baseVel.getY())
-                    + OMEGA_WEIGHT * Math.abs(baseVel.getHeading());
+                double denom = VX_WEIGHT * abs(baseVel.getX())
+                    + VY_WEIGHT * abs(baseVel.getY())
+                    + OMEGA_WEIGHT * abs(baseVel.getHeading());
                 vel = new Pose2d(
                     VX_WEIGHT * baseVel.getX(),
                     VY_WEIGHT * baseVel.getY(),
@@ -57,10 +62,21 @@ public class LocalizationTest extends LinearOpMode {
 
             drive.update();
 
+            List<Double> velocities = drive.getWheelVelocities();
+            double total = 0;
+
+            for (int i = 0; i < velocities.size(); i++ ){
+                total += abs(velocities.get(i));
+            }
+
+            double avgvel = total / velocities.size();
+
+
             Pose2d poseEstimate = drive.getPoseEstimate();
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
+            telemetry.addData("velocity", avgvel);
             telemetry.update();
         }
     }
